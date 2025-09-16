@@ -1,0 +1,15 @@
+# Ignore media files
+/media/
+*.mp4
+*.mov
+*.jpg
+*.png
+*.gif
+
+# Ignore static files
+newa_cinema/static/
+theme/static/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
