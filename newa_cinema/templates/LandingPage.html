@@ -91,15 +91,13 @@
                 d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"></path>
         </svg>
     </div>
-
     <nav id="mainNavbar" class="fixed w-full top-0 z-50 bg-[#111111] bg-opacity-95">
         <div class="container mx-auto px-6 py-6 flex items-center justify-between">
             <!-- Logo -->
             <a href="{% url 'LandingPage' %}" class="flex items-center space-x-2">
-                <img src="{% static 'cinema.png' %}" alt="Logo" class="h-10 w-auto" />
+<img src="{% static 'icons/cinema.png' %}" alt="Cinema Poster">
                 <span class="font-bold text-2xl" style="color: var(--primary-color)">CineDabali</span>
             </a>
-
             <!-- Search Form and Menu Items -->
             <div class="flex items-center space-x-6">
                 <!-- Desktop Search container with relative positioning -->
@@ -117,7 +115,6 @@
                     <!-- Search results are now a sibling, not a child of the form -->
                     <div id="search-results" class="absolute top-full left-0 w-full mt-2 bg-[#1A1A1A] rounded-lg shadow-lg z-50"></div>
                 </div>
-
                 <!-- Desktop Menu -->
                 <div id="navbarMenuDesktop" class="hidden lg:flex items-center space-x-8 text-[#F6F1EB] font-semibold">
                     <a href="{% url 'LandingPage' %}" class="hover:text-[#D4A017] transition">Home</a>
@@ -134,7 +131,6 @@
                 </button>
             </div>
         </div>
-
         <!-- Mobile Menu -->
         <div id="navbarMenuMobile" class="lg:hidden bg-[#1A1A1A] text-[#F6F1EB] py-4 transition-all duration-300 ease-in-out hidden">
             <div class="container mx-auto px-6">
@@ -184,7 +180,6 @@
             </a>
         </div>
     </section>
-
     <section id="new-releases" class="container mx-auto px-6 pt-12 pb-4">
         <h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3" style="color: var(--primary-color)">
             <img src="{% static 'icons/icons8-video-26.png' %}" alt="New Releases" class="h-6 w-6">
@@ -325,7 +320,7 @@
             </div>
         </div>
     </footer>
-    
+            
     <script>
         // Load event to handle the preloader
         window.addEventListener("load", function () {

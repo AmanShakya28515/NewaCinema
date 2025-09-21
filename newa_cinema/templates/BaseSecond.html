@@ -79,7 +79,6 @@
   <!-- Navbar -->
   <nav id="mainNavbar" class="fixed w-full top-0 z-50 bg-[#111111] bg-opacity-95">
     <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-
       <!-- Logo -->
        {% if user.is_authenticated %}
       <a href="{% url 'dashboard' %}" class="flex items-center space-x-2">
@@ -92,7 +91,6 @@
         <span class="font-bold text-2xl" style="color: var(--primary-color)">CineDabali</span>
       </a>
       {% endif %}
-
 
       <!-- Search + Desktop Menu -->
       <div class="flex items-center space-x-6">
