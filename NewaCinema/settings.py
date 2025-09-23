@@ -98,8 +98,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'newa_cinema',         
-        'USER': 'root',                 
-        'PASSWORD': '',                 
+        'USER': 'cinema_user',                 
+        'PASSWORD': 'StrongPassword123!',                 
         'HOST': '127.0.0.1',             
         'PORT': '3306',
     }
