@@ -65,8 +65,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
-    
-
 ]
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
@@ -98,8 +96,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'newa_cinema',         
-        'USER': 'root',                 
-        'PASSWORD': '',                 
+        'USER': 'cinema_user',                 
+        'PASSWORD': 'StrongPassword123!',                 
         'HOST': '127.0.0.1',             
         'PORT': '3306',
     }
@@ -124,7 +122,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'newa_cinema.User'
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
