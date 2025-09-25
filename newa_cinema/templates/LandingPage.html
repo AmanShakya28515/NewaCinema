@@ -184,13 +184,14 @@
             </a>
         </div>
     </section>
-    <section id="new-releases" class="container mx-auto px-6 pt-12 pb-4">
+    
+    <section id="now-showing" class="container mx-auto px-6 pt-6 pb-4">
         <h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3" style="color: var(--primary-color)">
-            <img src="{% static 'icons/play.png' %}" alt="New Releases" class="h-6 w-6">
-            New Releases
+            <img src="{% static 'icons/landing_video.png' %}" alt="Now Showing" class="h-6 w-6">
+            Now Showing
         </h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
-            {% for movie in movies %}
+            {% for movie in now_showing %}
             <div class="group" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
                 <a href="{% url 'movie_detail' movie.id %}">
                     <div class="relative w-full h-80 rounded-lg overflow-hidden shadow-lg">
@@ -212,14 +213,13 @@
             {% endfor %}
         </div>
     </section>
-
-    <section id="now-showing" class="container mx-auto px-6 pt-6 pb-4">
+    <section id="new-releases" class="container mx-auto px-6 pt-12 pb-4">
         <h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3" style="color: var(--primary-color)">
-            <img src="{% static 'icons/landing_video.png' %}" alt="Now Showing" class="h-6 w-6">
-            Now Showing
+            <img src="{% static 'icons/play.png' %}" alt="New Releases" class="h-6 w-6">
+            New Releases
         </h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
-            {% for movie in movies %}
+            {% for movie in new_releases  %}
             <div class="group" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
                 <a href="{% url 'movie_detail' movie.id %}">
                     <div class="relative w-full h-80 rounded-lg overflow-hidden shadow-lg">
@@ -255,7 +255,7 @@
             &#10095;
         </button>
         <div id="slider" class="flex space-x-6 overflow-hidden py-2">
-            {% for movie in movies %}
+            {% for movie in shorts %}
             <div class="flex-none w-48 md:w-56 lg:w-60 group" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
                 <a href="{% url 'movie_detail' movie.id %}">
                     <div class="relative w-full h-72 md:h-80 rounded-lg overflow-hidden shadow-lg">

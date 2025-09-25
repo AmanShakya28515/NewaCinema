@@ -203,7 +203,9 @@ def changePin(request):
 
 @login_required(login_url='login')
 def dashboard(request):
-    movies = Movie.objects.all()
+    new_releases = Movie.objects.filter(category="new_release")
+    now_showing = Movie.objects.filter(category="now_showing")
+    shorts = Movie.objects.filter(category="short")
 
     continue_entries = (
         UserWatchProgress.objects
@@ -211,19 +213,29 @@ def dashboard(request):
         .select_related("movie")
         .order_by("-updated_at")
     )
+
     if not request.session.get('welcome_shown', False):
         messages.success(request, f"Welcome, {request.user.name}!")
-        request.session['welcome_shown'] = True  # set the flag
+        request.session['welcome_shown'] = True
 
-    print("DEBUG CONTINUE ENTRIES:", continue_entries.values())  # 👈 add this
     return render(request, "dashboard.html", {
-        "movies": movies,
+        "new_releases": new_releases,
+        "now_showing": now_showing,
+        "shorts": shorts,
         "continue_entries": continue_entries,
     })
 
 def LandingPage(request):
-    movies = Movie.objects.all()  # or filter as needed
-    return render(request, 'LandingPage.html',{'movies':movies})
+    new_releases = Movie.objects.filter(category="new_release")
+    shorts = Movie.objects.filter(category="short")
+    now_showing = Movie.objects.filter(category="now_showing")
+
+    context = {
+        'new_releases': new_releases,
+        'shorts': shorts,
+        'now_showing': now_showing,
+    }
+    return render(request, 'LandingPage.html', context)
 
 def stream_video(request, path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -326,9 +338,8 @@ def logout_view(request):
         return redirect('LandingPage')  # Change to your homepage or login page
     return redirect('LandingPage')
 
-@login_required(login_url='login')
 def series(request):
-    movies = Movie.objects.all()
+    movies = Movie.objects.filter(category__in=["new_release", "now_showing"])
     return render(request, 'series.html',{'movies':movies})
 
 @login_required(login_url='login')  # Redirects to login if not logged in
@@ -339,8 +350,9 @@ def payment_after_movie(request, pk):
     ).order_by('-updated_at').first()
     last_position = last_progress.last_position if last_progress else 0
 
-    suggested_movies = Movie.objects.exclude(pk=pk)[:12]
-
+    suggested_movies = Movie.objects.filter(
+    category__in=["now_showing", "new_release"]
+    ).exclude(pk=pk)[:12]
     # ✅ Check if movie is already in the user's favourites
     is_favourite = Favourite.objects.filter(user=request.user, movie=movie).exists()
 
@@ -364,16 +376,17 @@ def search_movies(request):
     results = []
 
     if query:
+        # ✅ Only search in the title
         results = Movie.objects.filter(
-            Q(title__icontains=query) | Q(description__icontains=query)
+            title__icontains=query
         )
 
-    # Check for AJAX request in Django 4/5+
+    # Check if AJAX request (for live search)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         html = render_to_string('partials/search_results.html', {'results': results})
         return JsonResponse({'html': html})
 
-    # Fallback: render full page
+    # Fallback: full page
     return render(request, 'search_results.html', {'query': query, 'results': results})
 
 @login_required
