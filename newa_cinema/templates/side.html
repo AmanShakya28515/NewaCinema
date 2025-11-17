@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        
+    </style>
+</head>
+<body>
+<div class="col-md-3 sidebar text-center">
+  {% if user.profile.profile_pic %}
+    <img src="{{ user.profile.profile_pic.url }}" alt="Profile" class="profile-img">
+  {% else %}
+    <img src="{% static 'default_profile.png' %}" alt="Default" class="profile-img">
+  {% endif %}
+
+  <h5 class="fw-bold mt-2">{{ user.name }}</h5>
+  <p class="text-muted small">{{ user.email }}</p>
+
+  <div class="coin-badge my-3">
+    <img src="{% static 'bookmark.png' %}" alt="Coin">
+    0 SAVED MOVIES
+  </div>
+
+  <div class="mt-4 d-grid gap-2">
+    <button class="nav-link-secondary" onclick="location.href='/savedList'">Saved to My List</button>
+    <button class="nav-link-secondary" onclick="location.href='/changePin'">Security</button>
+  </div>
+</div>
+
+</body>
+</html>

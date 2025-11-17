@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Movie Site</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --primary-color: #B11226;
+      --secondary-color: #6A1B1A;
+      --accent-color: #D4A017;
+      --background-color: #1A1A1A;
+      --text-color: #F6F1EB;
+      --border-color: #C0C0C0;
+    }
+    .fade-right {
+      position: relative;
+      background-position: center;
+      background-size: cover;
+    }
+    .fade-right::after {
+      content: "";
+      position: absolute;
+      top: 0; bottom: 0; right: 0;
+      width: 30%;
+      pointer-events: none;
+      background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row bg-black"style="background-image: url('{% static 'login_reg_image.jpg' %}'); background-size: cover; background-position: center;">
+
+<div class="hidden md:block md:w-1/2 bg-center bg-cover fade-right"style="background-image: url('{% static 'icons/login_reg_image.jpg' %}');">
+  <a href="{% url 'LandingPage' %}">
+    <div class="absolute top-7 left-7 flex items-center bg-black/50 px-5 py-3 rounded-lg shadow-md cursor-pointer hover:bg-black/70 transition">
+      <img src="{% static 'icons/cinema.png' %}" alt="CinemaGhar Logo" class="h-16 w-auto mr-3">
+      <h5 class="text-3xl font-bold text-[#B11226]">CineDabali</h5>
+    </div>
+  </a>
+</div>
+
+<div class="w-full md:w-1/2 flex items-center justify-center bg-black/80 p-8 md:bg-black z-10">
+  <div class="max-w-md w-full">
+    <a href="{% url 'LandingPage' %}" class="flex items-center justify-center md:hidden mb-8">
+      <img src="{% static 'icons/cinema.png' %}" alt="CineDabali Logo" class="h-16 w-auto mr-3">
+      <h5 class="text-3xl font-bold text-[#B11226]">CineDabali</h5>
+    </a>
+    <h2 class="text-center text-3xl font-extrabold mb-8" style="color: var(--text-color)">Login</h2>
+
+    <form id="emailForm" method="post" class="space-y-6">
+      {% csrf_token %}
+      <div>
+        <label for="id_email" class="block text-sm font-semibold mb-1 text-white">Email</label>
+        <input type="email" placeholder="Enter your email" name="email" id="id_email" required
+          class="w-full px-4 py-3 rounded-md bg-[#2b2b2b] border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+      </div>
+      <button type="submit"
+        class="w-full py-3 rounded-md font-bold text-white bg-red-700 hover:bg-red-800 transition">
+        Send OTP
+      </button>
+      <p id="emailMsg" class="text-center mt-3 text-gray-300"></p>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-gray-300">
+      Don't have an account?
+      <a href="{% url 'register' %}" class="text-yellow-400 hover:text-yellow-500 font-semibold">Register here</a>
+    </p>
+  </div>
+</div>
+
+<!-- OTP Modal -->
+<div id="otpModal" class="fixed inset-0 flex items-center justify-center bg-black/70 hidden z-50">
+  <div class="bg-[#1A1A1A] p-8 rounded-2xl shadow-2xl w-96 flex flex-col items-center">
+    
+    <!-- Logo and Site Name -->
+    <img src="{% static 'icons/cinema.png' %}" alt="CineDabali Logo" class="h-16 w-auto mb-3">
+    <h2 class="text-2xl font-bold text-[#B11226] mb-6">CineDabali</h2>
+    
+    <!-- OTP Title -->
+    <h3 class="text-xl text-white mb-4 text-center font-semibold">Enter OTP</h3>
+    <p class="text-gray-400 text-sm mb-6 text-center">A 6-digit OTP has been sent to your email</p>
+    
+    <!-- OTP Form -->
+    <form id="otpForm" method="post" class="w-full">
+      {% csrf_token %}
+      <input type="hidden" name="email" id="otp_email">
+      
+      <!-- OTP Inputs -->
+      <div class="flex justify-between mb-6">
+        {% for i in "123456" %}
+        <input type="text" maxlength="1" pattern="[0-9]" required
+               class="otp-box w-12 h-12 text-center text-white bg-[#2b2b2b] border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"oninput="moveNext(this, {{ forloop.counter }})">
+        {% endfor %}
+      </div>
+      
+      <input type="hidden" name="otp" id="finalOtp">
+      
+      <!-- Verify Button -->
+      <button type="submit"
+              class="w-full py-3 rounded-lg font-bold text-white bg-red-700 hover:bg-red-800 transition">
+        Verify OTP
+      </button>
+      
+      <!-- Message -->
+      <p id="otpMsg" class="text-center mt-3 text-gray-300"></p>
+    </form>
+
+    <!-- Optional: Close Button -->
+    <button onclick="otpModal.classList.add('hidden')"
+            class="mt-4 text-sm text-gray-400 hover:text-white transition">Cancel</button>
+  </div>
+</div>
+
+<script>
+const emailForm = document.getElementById('emailForm');
+const otpModal = document.getElementById('otpModal');
+const otpEmail = document.getElementById('otp_email');
+const otpBoxes = document.querySelectorAll('.otp-box');
+const finalOtp = document.getElementById('finalOtp');
+const emailMsg = document.getElementById('emailMsg');
+const otpMsg = document.getElementById('otpMsg');
+
+// Send OTP
+emailForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  emailMsg.textContent = ""; // Clear previous message immediately
+  
+  const formData = new FormData(emailForm);
+  try {
+    const res = await fetch("{% url 'send_otp' %}", { method: "POST", body: formData });
+    const data = await res.json();
+    emailMsg.textContent = data.message;
+    
+    if (data.success) {
+      otpModal.classList.remove('hidden');
+      otpBoxes[0].focus();
+      otpEmail.value = formData.get("email");
+    }
+  } catch (error) {
+    emailMsg.textContent = "An error occurred. Please try again.";
+    console.error("Fetch error:", error);
+  }
+});
+
+// Autofocus OTP
+function moveNext(current, index) {
+  if (current.value.length === 1 && index < otpBoxes.length) {
+    otpBoxes[index].focus();
+  }
+}
+
+// Verify OTP
+document.getElementById('otpForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  otpMsg.textContent = ""; // Clear previous message
+  
+  finalOtp.value = Array.from(otpBoxes).map(b => b.value).join('');
+  const formData = new FormData(otpForm);
+  formData.append("otp", finalOtp.value);
+
+  try {
+    const res = await fetch("{% url 'verify_otp' %}", { method: "POST", body: formData });
+    const data = await res.json();
+    otpMsg.textContent = data.message;
+    
+    if (data.success) {
+      window.location.href = data.redirect_url;
+    }
+  } catch (error) {
+    otpMsg.textContent = "An error occurred during verification. Please try again.";
+    console.error("Fetch error:", error);
+  }
+});
+</script>
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Newari Movies | CinemaGhar{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 400,
+    easing: 'ease-out',
+    once: true
+  });
+</script>
+<style>
+  .cg-card { position: relative; width: 100%; height: 20rem; border-radius: .5rem; overflow: hidden; z-index: 0; }
+.cg-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease; /* smooth animation */
+}
+
+.cg-card:hover img {
+  transform: scale(1.05); /* zoom in 105% */
+}
+  .cg-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.45);
+    opacity: 0; transition: opacity .25s ease;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .cg-card:hover .cg-overlay { opacity: 1 !important; }
+  .cg-play {
+    width: 4rem; height: 4rem; border-radius: 9999px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,.35);
+    transform: scale(.9); transition: transform .25s ease;
+    background: linear-gradient(to top right, #7f1d1d, #991b1b, #ca8a04); /* from-red-900 → via-red-800 → to-yellow-600 */
+  }
+  .cg-card:hover .cg-play { transform: scale(1.08); }
+
+  @keyframes slideIn {
+    0% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  @media (max-width: 640px) {
+  #hero-section {
+    background-position: top center;
+  }
+}
+
+</style>
+
+<!-- Hero Section -->
+<div class="container-fluid p-0">
+  <div id="toast-container" class="fixed top-24 right-4 z-50 space-y-3"></div>
+  
+  <section
+    id="hero-section"
+    class="relative h-[90vh] flex items-center justify-start"style="background-image: url('{% static 'newar/n5.jpg' %}'); background-position: center; background-size: cover; transition: background-image 1s ease-in-out;"
+  >
+    <div class="absolute inset-0" style="background-color: rgba(0, 0, 0, 0.6);"></div>
+    <div class="px-12 relative z-10 max-w-lg text-left">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4" style="color: var(--text-color)" data-aos="fade-up" data-aos-delay="1000">
+        A special Newari movies site to watch endless shows.
+      </h1>
+      <p class="mb-6 text-lg text-white" data-aos="fade-up" data-aos-delay="1500">
+        Enjoy a rich collection of Newari movies, TV series, and cultural stories, all in one place.
+        Stream anytime and experience the beauty of Newar heritage.
+      </p>
+      <a href="#continue-watching"
+                class="inline-block bg-[#B11226] hover:bg-[#6A1B1A] text-[#F6F1EB] font-semibold py-3 px-6 rounded transition" data-aos="fade-up" data-aos-delay="1700">
+                View More
+            </a>
+    </div>
+
+ <!-- Toast Container -->
+<div id="toast-container" class="fixed top-24 right-4 z-50 space-y-3"></div>
+  
+{% if messages %}
+  {% for message in messages %}
+    <script>
+      const toastContainer = document.getElementById('toast-container');
+
+      // Create toast div
+      const toast = document.createElement('div');
+      toast.textContent = "{{ message|escapejs }}";
+      toast.className = "max-w-sm w-full px-4 py-3 rounded-lg shadow-lg text-white font-medium animate-slideIn {% if message.tags == 'success' %}bg-[#6A1B1A]{% elif message.tags == 'error' %}bg-red-500{% elif message.tags == 'warning' %}bg-yellow-500 text-black{% else %}bg-gray-700{% endif %}";
+
+      // Append to container
+      toastContainer.appendChild(toast);
+
+      // Auto-remove toast after 3 seconds with fade out
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'transition', 'duration-500');
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    </script>
+  {% endfor %}
+{% endif %}
+
+  </section>
+</div>
+
+<script>
+  const hero = document.getElementById('hero-section');
+  const images = [
+    "{% static 'newar/n5.jpg' %}",
+    "{% static 'newar/n6.jpg' %}",
+    "{% static 'newar/n7.jpg' %}",
+    "{% static 'newar/n8.jpg' %}"
+  ];
+  let index = 0;
+  setInterval(() => {
+    index = (index + 1) % images.length;
+    hero.style.backgroundImage = `url('${images[index]}')`;
+  }, 3000);
+</script>
+
+{% if continue_entries %}
+<section id="continue-watching" class="container mx-auto px-6 pt-12 pb-4 relative">
+  <h2 class="text-2xl font-bold mb-4 flex items-center gap-3" style="color: var(--primary-color)">
+    <img src="{% static 'icons/continue.png' %}" alt="Continue Watching" class="h-8 w-8">
+    Continue Watching
+  </h2>
+
+  <!-- Left/Right buttons -->
+  <button id="prevBtn" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-red-600/80 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-110">
+    &#10094;
+  </button>
+  <button id="nextBtn" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-red-600/80 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-110">
+    &#10095;
+  </button>
+  <!-- Slider container -->
+  <div id="slider" class="flex space-x-6 overflow-hidden py-2">
+    {% for entry in continue_entries %}
+    <div class="flex-none w-48 md:w-56 lg:w-60 group">
+      <a href="{% url 'payment_after_movie' entry.movie.id %}">
+        <div class="relative w-full h-72 md:h-80 rounded-lg overflow-hidden shadow-lg">
+          <img src="{{ entry.movie.poster.url }}" alt="{{ entry.movie.title }}"
+               class="w-full h-full object-cover transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl" />
+
+            <!-- Progress bar -->
+          <div class="absolute bottom-0 left-0 h-1 bg-red-600 rounded-full"style="width: {{ entry.progress }}%;"></div>
+
+          <!-- Overlay with play button -->
+          <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-red-900 via-red-800 to-yellow-600 shadow-lg transform scale-90 group-hover:scale-110 transition-all duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 2v20l18-10L4 2z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <h3 class="mt-3 text-center text-lg font-semibold text-white truncate">
+          {{ entry.movie.title }}
+        </h3>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Hide scrollbar -->
+<style>
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; 
+    scrollbar-width: none;
+  }
+</style>
+
+<section class="container mx-auto px- pt-10 pb-4">
+<h2 class="text-2xl font-bold mb-6 flex items-center gap-3" style="color: var(--primary-color)">
+  <!-- Custom PNG icon -->
+<img src="{% static 'icons/landing_video.png' %}" 
+     alt="Shorts" 
+     class="h-7 w-7 object-contain">
+  Now Showing
+</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+    {% for movie in now_showing %}
+    <div class="group" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+      <a href="{% url 'movie_detail' movie.id %}">
+        <div class="cg-card shadow-lg">
+          <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+          <div class="cg-overlay">
+            <div class="cg-play">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white ml-1" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 2v20l18-10L4 2z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <h3 class="mt-3 text-center text-lg font-semibold text-white truncate">
+          {{ movie.title }}
+        </h3>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+<!-- Now Showing Section 1 -->
+<section class="container mx-auto px-6 pt-6 pb-4">
+<h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3" style="color: var(--primary-color)">
+  <img src="{% static 'icons/play.png' %}" alt="Now Showing" class="h-6 w-6">
+  New Releases
+</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+    {% for movie in new_releases %}
+    <div class="group" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+      <a href="{% url 'movie_detail' movie.id %}">
+        <div class="cg-card shadow-lg">
+          <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+          <div class="cg-overlay">
+            <div class="cg-play">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white ml-1" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 2v20l18-10L4 2z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <h3 class="mt-3 text-center text-lg font-semibold text-white truncate">
+          {{ movie.title }}
+        </h3>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Now Showing Section 2 -->
+
+<section id="shorts" class="container mx-auto px-6 pt-12 pb-4 relative">
+  <h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3" style="color: var(--primary-color)">
+    <img src="{% static 'icons/play.png' %}" alt="Now Showing" class="h-6 w-6">
+    Shorts
+  </h2>
+
+  <!-- Arrow buttons -->
+  <button id="shortsPrev" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-red-600/80 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-110">
+    &#10094;
+  </button>
+  <button id="shortsNext" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-red-600/80 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-110">
+    &#10095;
+  </button>
+
+  <!-- Slider container -->
+  <div id="shortsSlider" class="flex space-x-6 overflow-hidden py-2">
+    {% for movie in shorts %}
+    <div class="flex-none w-48 md:w-56 lg:w-60 group" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+      <a href="{% url 'movie_detail' movie.id %}">
+        <div class="relative w-full h-72 md:h-80 rounded-lg overflow-hidden shadow-lg">
+          <img src="{{ movie.poster.url }}" alt="{{ movie.title }}"
+               class="w-full h-full object-cover transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl" />
+          <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-red-900 via-red-800 to-yellow-600 shadow-lg transform scale-90 group-hover:scale-110 transition-all duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 2v20l18-10L4 2z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <h3 class="mt-3 text-center text-lg font-semibold text-white truncate">
+          {{ movie.title }}
+        </h3>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+<script>
+  // Shorts slider (already working)
+  const shortsSlider = document.getElementById('shortsSlider');
+  const shortsNext = document.getElementById('shortsNext');
+  const shortsPrev = document.getElementById('shortsPrev');
+  const scrollAmountShorts = 300; 
+
+  shortsNext.addEventListener('click', () => {
+    shortsSlider.scrollBy({ left: scrollAmountShorts, behavior: 'smooth' });
+  });
+
+  shortsPrev.addEventListener('click', () => {
+    shortsSlider.scrollBy({ left: -scrollAmountShorts, behavior: 'smooth' });
+  });
+
+  // ✅ Continue Watching slider
+  const slider = document.getElementById('slider');
+  const nextBtn = document.getElementById('nextBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const scrollAmountContinue = 300; 
+
+  nextBtn.addEventListener('click', () => {
+    slider.scrollBy({ left: scrollAmountContinue, behavior: 'smooth' });
+  });
+
+  prevBtn.addEventListener('click', () => {
+    slider.scrollBy({ left: -scrollAmountContinue, behavior: 'smooth' });
+  });
+</script>
+
+<!-- Footer -->
+<footer class="bg-[#2b2b2b] text-[#F6F1EB]">
+  <div class="container mx-auto px-6 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+
+      <!-- Brand Section -->
+      <div class="space-y-4">
+        <div class="flex items-center space-x-3">
+          <img src="{% static 'icons/cinema.png' %}" alt="CinemaGhar Logo" class="h-10 w-auto">
+          <h5 class="text-2xl font-bold text-[#D4A017]">CinemaGhar</h5>
+        </div>
+        <p class="text-sm text-gray-300">
+          Nepal's first OTT platform bringing you the best of Newari cinema.
+        </p>
+        <div class="flex space-x-4 mt-2">
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/tiktok.svg' %}" alt="TikTok" class="w-6 h-6">
+          </a>
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/instagram.svg' %}" alt="Instagram" class="w-6 h-6">
+          </a>
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/facebook.svg' %}" alt="Facebook" class="w-6 h-6">
+          </a>
+        </div>
+      </div>
+      <!-- Navigation -->
+      <div class="space-y-4">
+        <h5 class="text-xl font-semibold text-[#D4A017]">Navigation</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Home</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Movies</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">My List</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Series</a></li>
+        </ul>
+      </div>
+      <!-- Support -->
+      <div class="space-y-4">
+        <h5 class="text-xl font-semibold text-[#D4A017]">Support</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">FAQ</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Contact Us</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Return & Refund Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-gray-600 mt-8 pt-4 text-center text-xs text-gray-400">
+      © 2025 CinemaGhar. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Navbar toggle for mobile
+  document.getElementById('navbarToggle').addEventListener('click', () => {
+    const menu = document.getElementById('navbarMenu');
+    menu.classList.toggle('hidden');
+  });
+
+  window.addEventListener("load", function () {
+    const loader = document.getElementById("loader");
+    if (loader) {
+      setTimeout(() => {
+        loader.style.transition = "opacity 0.5s ease";
+        loader.style.opacity = 0;
+        setTimeout(() => { loader.style.display = "none"; }, 500);
+      }, 1000);
+    }
+  });
+const row = document.getElementById("movieRow");
+  const scrollLeft = document.getElementById("scrollLeft");
+  const scrollRight = document.getElementById("scrollRight");
+
+  scrollLeft.addEventListener("click", () => {
+    row.scrollBy({ left: -300, behavior: "smooth" });
+  });
+
+  scrollRight.addEventListener("click", () => {
+    row.scrollBy({ left: 300, behavior: "smooth" });
+  });
+</script>
+
+{% endblock %}
+</body>
+</html>

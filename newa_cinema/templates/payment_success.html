@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen">
+
+  <div class="bg-gray-800 p-8 rounded-2xl shadow-lg text-center max-w-md">
+    <svg class="w-20 h-20 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="2"
+         viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+
+    <h1 class="text-3xl font-bold mb-2">Payment Successful!</h1>
+    <p class="text-gray-300 mb-6">Thank you for your purchase. You can now watch your movie!</p>
+
+    <a href="{% url 'watch_movie' request.GET.movie %}" 
+       class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg font-semibold shadow-md transition">
+      Watch Now
+    </a>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,319 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" x-data>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}CinemaGhar{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #B11226;
+            --secondary-color: #6A1B1A;
+            --accent-color: #D4A017;
+            --background-color: #1A1A1A;
+            --text-color: #F6F1EB;
+            --border-color: #C0C0C0;
+        }
+
+        body {
+            margin: 0;
+            padding-top: 80px; /* space for fixed navbar */
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .navbar-scrolled {
+            background-color: rgba(26,26,26,0.95);
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .custom-modal .modal-content {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .custom-modal .modal-title {
+            color: var(--primary-color);
+        }
+
+        #search-results-desktop,
+        #search-results-mobile {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+            background-color: var(--background-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            max-height: 20rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #search-results-desktop.fade-out,
+        #search-results-mobile.fade-out {
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+        }
+
+       /* Loader styles from your landing page */
+       #loader {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: black;
+            z-index: 50;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-[var(--background-color)] text-[var(--text-color)]">
+
+    <div id="loader" class="fixed inset-0 flex items-center justify-center bg-black z-50">
+        <svg class="animate-spin h-12 w-12 text-[#B11226]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"></path>
+        </svg>
+    </div>
+
+    <nav id="mainNavbar" class="fixed w-full top-0 z-50 bg-[#111111] bg-opacity-95">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+
+            <a href="{% url 'dashboard' %}" class="flex items-center space-x-2">
+                <img src="{% static 'cinema.png' %}" alt="Logo" class="h-8 w-auto">
+                <span class="font-bold text-2xl" style="color: var(--primary-color)">CineDabali</span>
+            </a>
+            
+            <div class="flex items-center space-x-6">
+                <div class="relative hidden lg:block mr-6">
+                    <form action="{% url 'search_movies' %}" method="GET" autocomplete="off" class="flex items-center">
+                        <input id="search-input-desktop" type="text" name="q" placeholder="Search movies..."
+                            class="pl-4 pr-10 py-2 rounded-lg bg-[#2b2b2b] text-[#F6F1EB] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#B11226] transition">
+                        <button type="submit" class="absolute right-1 top-1/2 transform -translate-y-1/2 text-[#F6F1EB] hover:text-[#D4A017]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </button>
+                    </form>
+                    <div id="search-results-desktop" class="absolute top-full left-0 w-full mt-2 bg-[#1A1A1A] rounded-lg shadow-lg z-50"></div>
+                </div>
+
+                <div id="navbarMenuDesktop" class="hidden lg:flex items-center space-x-8 text-[var(--text-color)] font-semibold">
+                  {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="hover:text-[var(--accent-color)] transition">Home</a>
+                  {% else %}
+                      <a href="{% url 'LandingPage' %}" class="hover:text-[var(--accent-color)] transition">Home</a>
+                  {% endif %}
+                    <a href="{% url 'movies' %}" class="hover:text-[var(--accent-color)] transition">Movies</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'update_profile' %}" class="flex items-center space-x-2 hover:text-[var(--accent-color)] transition">
+                            {% if user.profile.profile_pic %}
+                                <img src="{{ user.profile.profile_pic.url }}" alt="Profile" class="w-8 h-8 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-8 h-8 rounded-full bg-[#6A1B1A] flex items-center justify-center text-white font-bold text-sm">
+                                    {{ user.name|slice:":1"|upper }}{% if user.name|length > 1 %}{{ user.name|slice:"1:2"|upper }}{% endif %}
+                                </div>
+                            {% endif %}
+                            <span>{{ user.name }}</span>
+                        </a>
+                        <button type="button" class="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] px-4 py-2 rounded text-[var(--text-color)] font-semibold transition ml-4"
+                                data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            Logout
+                        </button>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] px-4 py-2 rounded transition">
+                            Create free account
+                        </a>
+                        <a href="{% url 'login' %}" class="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] px-4 py-2 rounded transition ml-2">
+                            Login
+                        </a>
+                    {% endif %}
+                </div>
+
+                <button id="navbarToggle" class="lg:hidden text-[var(--text-color)] focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="navbarMenuMobile" class="lg:hidden bg-[#1A1A1A] text-[#F6F1EB] py-4 transition-all duration-300 ease-in-out hidden">
+            <div class="container mx-auto px-6">
+                <div class="relative mb-4">
+                    <form action="{% url 'search_movies' %}" method="GET" autocomplete="off" class="flex items-center">
+                        <input id="search-input-mobile" type="text" name="q" placeholder="Search movies..."
+                            class="w-full pl-4 pr-10 py-2 rounded-lg bg-[#2b2b2b] text-[#F6F1EB] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#B11226] transition" />
+                        <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#F6F1EB] hover:text-[#D4A017]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                    </form>
+                    <div id="search-results-mobile" class="absolute top-full left-0 w-full mt-2 bg-[#1A1A1A] rounded-lg shadow-lg z-50"></div>
+                </div>
+                <div class="flex flex-col space-y-4 font-semibold text-center">
+                    <a href="{% url 'dashboard' %}" class="hover:text-[var(--accent-color)] transition">Home</a>
+                    <a href="{% url 'movies' %}" class="hover:text-[var(--accent-color)] transition">Movies</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'update_profile' %}" class="hover:text-[var(--accent-color)] transition">Profile</a>
+                        <button type="button" class="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] px-4 py-2 rounded text-[var(--text-color)] font-semibold transition"
+                                data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            Logout
+                        </button>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] px-4 py-2 rounded transition">
+                            Create free account
+                        </a>
+                        <a href="{% url 'login' %}" class="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] px-4 py-2 rounded transition">
+                            Login
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <div class="modal fade custom-modal" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="logoutModalLabel">Confirm Logout</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body fs-5">
+                    Are you sure you want to logout?
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{% url 'logout_view' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn" style="background-color: var(--primary-color); color: var(--text-color); font-weight: 600;">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const navbarToggle = document.getElementById('navbarToggle');
+            const navbarMenuMobile = document.getElementById('navbarMenuMobile');
+            const navbar = document.getElementById('mainNavbar');
+
+            // Mobile menu toggle
+            navbarToggle.addEventListener('click', () => {
+                navbarMenuMobile.classList.toggle('hidden');
+            });
+
+            // Hide mobile menu on resize to desktop view
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) { // Tailwind's 'lg' breakpoint
+                    navbarMenuMobile.classList.add('hidden');
+                }
+            });
+
+            // Navbar scroll effect
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 10) navbar.classList.add('navbar-scrolled');
+                else navbar.classList.remove('navbar-scrolled');
+            });
+
+            // --- Search Functionality ---
+            // Desktop Search
+            const searchInputDesktop = document.getElementById('search-input-desktop');
+            const searchResultsDesktop = document.getElementById('search-results-desktop');
+
+            if (searchInputDesktop) {
+                searchInputDesktop.addEventListener('input', function() {
+                    const query = this.value;
+                    if (query.length < 2) {
+                        searchResultsDesktop.innerHTML = '';
+                        return;
+                    }
+
+                    fetch(`{% url 'search_movies' %}?q=${query}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResultsDesktop.innerHTML = data.html;
+                    });
+                });
+                // Click outside to hide
+                document.addEventListener('click', function(e) {
+                    if (!searchInputDesktop.contains(e.target) && !searchResultsDesktop.contains(e.target)) {
+                        searchResultsDesktop.innerHTML = '';
+                    }
+                });
+            }
+
+            // Mobile Search
+            const searchInputMobile = document.getElementById('search-input-mobile');
+            const searchResultsMobile = document.getElementById('search-results-mobile');
+
+            if (searchInputMobile) {
+                searchInputMobile.addEventListener('input', function() {
+                    const query = this.value;
+                    if (query.length < 2) {
+                        searchResultsMobile.innerHTML = '';
+                        return;
+                    }
+
+                    fetch(`{% url 'search_movies' %}?q=${query}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResultsMobile.innerHTML = data.html;
+                    });
+                });
+                // Click outside to hide
+                document.addEventListener('click', function(e) {
+                    if (!searchInputMobile.contains(e.target) && !searchResultsMobile.contains(e.target)) {
+                        searchResultsMobile.innerHTML = '';
+                    }
+                });
+            }
+        });
+
+        // This is the correct and consolidated script for the loader
+        window.addEventListener("load", function () {
+            const loader = document.getElementById("loader");
+            if (loader) {
+                setTimeout(() => {
+                    loader.style.transition = "opacity 0.5s ease";
+                    loader.style.opacity = 0;
+                    setTimeout(() => { loader.style.display = "none"; }, 500);
+                }, 1000); // 1000ms = 1 second
+            }
+        });
+    </script>
+</body>
+</html>

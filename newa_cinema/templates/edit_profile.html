@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+{% block content %}
+<style>
+  @keyframes slideIn {
+    0% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+  }
+  .animate-slideIn {
+    animation: slideIn 0.5s ease-out forwards;
+  }
+</style>
+
+<body class="bg-[#1A1A1A] text-white font-[Segoe_UI] min-h-screen">
+  
+<div id="toast-container" class="fixed top-24 right-5 flex flex-col space-y-2 z-50"></div>
+
+<!-- Banner (with Image + bottom fade) -->
+<div class="relative h-48 md:h-64">
+  <img src="{% static 'back_newar.png' %}" alt="Cover Photo" class="w-full h-full object-cover">
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#1A1A1A]"></div>
+</div>
+
+<!-- Profile Picture -->
+<div class="relative -mt-20 flex flex-col items-center">
+{% if user.profile.profile_pic %}
+  <img src="{{ user.profile.profile_pic.url }}" class="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover">
+{% else %}
+  <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg flex items-center justify-center bg-[#6A1B1A] text-white text-4xl font-bold">
+    {{ user.name|slice:":1"|upper }}{% if user.name|length > 1 %}{{ user.name|slice:"1:2"|upper }}{% endif %}
+  </div>
+{% endif %}
+
+
+  <h2 class="mt-4 text-2xl font-bold">{{ user.name }}</h2>
+  <p class="text-gray-400 text-sm">{{ user.email }}</p>
+</div>
+
+<!-- Stats -->
+<div class="flex justify-center mt-8">
+  <div class="grid grid-cols-3 gap-6 px-6">
+    
+    <!-- Card 1: Saved to My List -->
+    <div class="bg-[#2b2b2b] p-6 rounded-2xl text-center shadow-lg hover:scale-105 transform transition duration-300">
+      <!-- Icon -->
+      <img src="{% static 'icons/icons8-save-30.png' %}" alt="Saved Icon" class="mx-auto mb-3 w-10 h-10">
+      <!-- Number -->
+      <div class="text-yellow-500 text-4xl font-bold mb-2">{{ user.favourite_set.count }}</div>
+      <!-- Label -->
+      <div class="text-gray-300 font-medium tracking-wide">Saved to My List</div>
+    </div>
+
+    <!-- Card 2: Watched Movies -->
+    <div class="bg-[#2b2b2b] p-6 rounded-2xl text-center shadow-lg hover:scale-105 transform transition duration-300">
+      <!-- Icon -->
+      <img src="{% static 'icons/icons8-movie-48.png' %}" alt="Watched Icon" class="mx-auto mb-3 w-10 h-10">
+      <div class="text-yellow-500 text-4xl font-bold mb-2">{{ watched_count }}</div>
+      <div class="text-gray-300 font-medium tracking-wide">Watched Movies</div>
+    </div>
+
+    <!-- Card 3: Watch Time -->
+    <div class="bg-[#2b2b2b] p-6 rounded-2xl text-center shadow-lg hover:scale-105 transform transition duration-300">
+      <!-- Icon -->
+      <img src="{% static 'icons/icons8-clock-30.png' %}" alt="Watch Time Icon" class="mx-auto mb-3 w-10 h-10">
+      <div class="text-yellow-500 text-4xl font-bold mb-2">{{ watched_hours }}h {{ watched_minutes }}m</div>
+      <div class="text-gray-300 font-medium tracking-wide">Watch Time</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Actions -->
+<div class="flex justify-center mt-6 ml-15 space-x-6">
+  <!-- Saved Movies Button -->
+  <button onclick="location.href='/savedList'"
+          class="w-48 bg-[#B11226] hover:bg-[#6A1B1A] py-3 rounded-2xl shadow-lg text-lg font-semibold transition transform hover:scale-105">
+    Saved Movies
+  </button>
+
+  <!-- Change Profile Picture -->
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label class="w-48 cursor-pointer bg-[#B11226] hover:bg-[#6A1B1A] text-white rounded-2xl py-3 font-medium shadow-lg transition transform hover:scale-105 text-center">
+      Change Profile Picture
+      <input type="file" name="profile_pic" accept="image/*" class="hidden" onchange="this.form.submit()">
+    </label>
+  </form>
+</div>
+
+
+
+
+
+<!-- Personal Info -->
+<div class="px-6 mt-12">
+  <h3 class="text-3xl font-bold mb-8 flex items-center gap-3 text-white">
+    <svg class="w-9 h-9 text-[#B11226]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+    Personal Information
+  </h3>
+
+  <div class="bg-[#1f1f1f] p-8 rounded-2xl shadow-lg border border-gray-700/40 backdrop-blur-md">
+    <div class="grid gap-6 md:grid-cols-3">
+      
+      <!-- Full Name -->
+      <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-[#2b2b2b] transition">
+        <div class="bg-[#B11226]/20 p-3 rounded-xl">
+          <svg class="w-7 h-7 text-[#B11226]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-gray-400 text-sm uppercase tracking-wide">Full Name</p>
+          <p class="text-xl font-semibold text-white">{{ user.name }}</p>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-[#2b2b2b] transition">
+        <div class="bg-blue-500/20 p-3 rounded-xl">
+          <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 12H8m8 0l-3.5 3.5M16 12l-3.5-3.5" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-gray-400 text-sm uppercase tracking-wide">Email Address</p>
+          <p class="text-xl font-semibold text-white flex items-center gap-2">
+            {{ user.email }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Member Since -->
+      <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-[#2b2b2b] transition">
+        <div class="bg-green-500/20 p-3 rounded-xl">
+          <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-11 8h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-gray-400 text-sm uppercase tracking-wide">Member Since</p>
+          <p class="text-xl font-semibold text-white">{{ user.date_joined|date:"F j, Y" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal for Change Pin -->
+<!-- Modern OTP Change Modal -->
+<!-- Simple & Modern OTP Modal -->
+<div id="pinModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+  <div id="pinModalBox" class="bg-gray-900 rounded-2xl p-6 w-full max-w-sm relative transform transition-all duration-300 scale-90 opacity-0">
+
+    <!-- Close Button -->
+    <button type="button" onclick="closePinModal()" 
+            class="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl font-bold transition">&times;</button>
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h2 class="text-xl font-semibold text-[#FFD700] mb-1">OTP Change</h2>
+      <p class="text-gray-400 text-sm">Securely update your one-time password</p>
+    </div>
+
+    <!-- Current OTP Display -->
+<div class="mb-4">
+  <label class="block text-sm text-gray-300 mb-1">Current OTP</label>
+  <div class="relative">
+    <input type="password" id="currentOtp" value="{{ request.user.otp|default:'Not Set' }}" readonly
+           class="w-full rounded-lg bg-gray-800 text-white px-3 py-2 pr-10 cursor-not-allowed focus:outline-none" />
+    <button type="button" onclick="toggleOtpVisibility()" 
+            class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white">
+      <!-- Eye SVG -->
+      <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+    </button>
+  </div>
+</div> 
+    <!-- New OTP Form -->
+    <form method="POST" action="{% url 'changePin' %}" class="space-y-4" id="otpForm">
+      {% csrf_token %}
+      <div>
+        <label for="otp" class="block text-sm text-gray-300 mb-1">New OTP (6 digits)</label>
+        <input type="text" id="otp" name="otp" required maxlength="6" pattern="\d{6}" inputmode="numeric"
+               class="w-full rounded-lg bg-gray-800 text-white px-3 py-2 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#B11226]" 
+               placeholder="Enter 6-digit OTP" />
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closePinModal()" 
+                class="text-gray-400 hover:text-white transition">Cancel</button>
+        <button type="submit" 
+                class="bg-[#B11226] hover:bg-[#6A1B1A] text-white font-semibold px-4 py-2 rounded-lg transition">
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Prevent non-digit input
+  const otpInput = document.getElementById('otp');
+  otpInput.addEventListener('input', () => {
+    otpInput.value = otpInput.value.replace(/\D/g, ''); // only digits
+  });
+
+  // Validate OTP length on submit
+  const form = document.getElementById('otpForm');
+  form.addEventListener('submit', (e) => {
+    if (otpInput.value.length !== 6) {
+      e.preventDefault();
+      alert("OTP must be exactly 6 digits.");
+    }
+  });
+
+  // Modal open/close
+  function openPinModal() {
+    const modal = document.getElementById('pinModal');
+    const box = document.getElementById('pinModalBox');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      box.classList.remove('scale-90', 'opacity-0');
+      box.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closePinModal() {
+    const modal = document.getElementById('pinModal');
+    const box = document.getElementById('pinModalBox');
+    box.classList.add('scale-90', 'opacity-0');
+    setTimeout(() => modal.classList.add('hidden'), 200);
+  }
+</script>
+<script>
+  function toggleOtpVisibility() {
+    const otpField = document.getElementById('currentOtp');
+    if (otpField.type === "password") {
+      otpField.type = "text";
+    } else {
+      otpField.type = "password";
+    }
+  }
+</script>
+
+<!-- Footer -->
+<div class="mt-16"></div>
+<footer class="bg-[#2b2b2b] text-[#F6F1EB]">
+  <div class="container mx-auto px-6 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+      <div class="space-y-4">
+        <div class="flex items-center space-x-3">
+          <img src="{% static 'cinema.png' %}" alt="CinemaGhar Logo" class="h-10 w-auto">
+          <h5 class="text-2xl font-bold text-[#D4A017]">CinemaGhar</h5>
+        </div>
+        <p class="text-sm text-gray-300">Nepal's first OTT platform bringing you the best of Newari cinema.</p>
+        <div class="flex space-x-4 mt-2">
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/tiktok.svg' %}" alt="TikTok" class="w-6 h-6">
+          </a>
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/instagram.svg' %}" alt="Instagram" class="w-6 h-6">
+          </a>
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/facebook.svg' %}" alt="Facebook" class="w-6 h-6">
+          </a>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <h5 class="text-xl font-semibold text-[#D4A017]">Navigation</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Home</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Movies</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">My List</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Series</a></li>
+        </ul>
+      </div>
+
+      <div class="space-y-4">
+        <h5 class="text-xl font-semibold text-[#D4A017]">Support</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">FAQ</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Contact Us</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Return & Refund Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-600 mt-8 pt-4 text-center text-xs text-gray-400">
+      © 2025 CinemaGhar. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<!-- Modal JS -->
+ {% if request.GET.open_pin_modal %}
+<script>
+  document.addEventListener('DOMContentLoaded',openPinModal);
+</script>
+{% endif %}
+
+<script>
+  const pinModal = document.getElementById('pinModal');
+  const pinModalBox = document.getElementById('pinModalBox');
+
+  function openPinModal() {
+    pinModal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      pinModalBox.classList.remove('opacity-0','scale-90');
+      pinModalBox.classList.add('opacity-100','scale-100');
+      const firstInput = pinModal.querySelector('input,select,textarea');
+      if (firstInput) firstInput.focus();
+    });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePinModal() {
+    pinModalBox.classList.add('opacity-0','scale-90');
+    pinModalBox.classList.remove('opacity-100','scale-100');
+    setTimeout(() => {
+      pinModal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }, 150);
+  }
+
+  // Close on backdrop click
+  pinModal?.addEventListener('click', (e) => { if (e.target === pinModal) closePinModal(); });
+
+  // Close on Esc
+  document.addEventListener('keydown', (e) => {
+    if (!pinModal.classList.contains('hidden') && e.key === 'Escape') closePinModal();
+  });
+
+  // Auto-open modal when server indicates validation errors
+const openPin = "{{ open_pin_modal|yesno:'true,false' }}";
+if (openPin === "true") {
+    document.addEventListener('DOMContentLoaded', openPinModal);
+}
+</script>
+
+{% if messages %}
+  {% for message in messages %}
+    <script>
+      const toastContainer = document.getElementById('toast-container');
+      // Create toast div
+      const toast = document.createElement('div');
+      toast.textContent = "{{ message|escapejs }}";
+      toast.className = "max-w-sm w-full px-4 py-3 rounded-lg shadow-lg text-white font-medium animate-slideIn {% if message.tags == 'success' %}bg-[#6A1B1A]{% elif message.tags == 'error' %}bg-red-500{% elif message.tags == 'warning' %}bg-yellow-500 text-black{% else %}bg-gray-700{% endif %}";
+      toastContainer.appendChild(toast);
+
+      // Auto-remove toast after 3 seconds
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'transition', 'duration-500');
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    </script>
+  {% endfor %}
+{% endif %}
+</body>
+{% endblock %}
+</html>

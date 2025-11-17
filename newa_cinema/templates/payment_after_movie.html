@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+<div class="bg-[#1E1E1E] text-white min-h-screen">
+        <style>
+    @keyframes slideIn {
+      0% { transform: translateX(100%); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+    .animate-slideIn {
+      animation: slideIn 0.5s ease-out forwards;
+    }
+    .cg-card {
+    position: relative;
+    width: 100%;
+    border-radius: .5rem;
+    overflow: hidden;
+  }
+  .cg-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .cg-card:hover img {
+    transform: scale(1.05);
+  }
+
+  .cg-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.45);
+    opacity: 0;
+    transition: opacity .25s ease;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .cg-card:hover .cg-overlay {
+    opacity: 1;
+  }
+
+  .cg-play {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to top right, #7f1d1d, #991b1b, #ca8a04);
+    box-shadow: 0 10px 25px rgba(0,0,0,.35);
+    transform: scale(.9);
+    transition: transform .25s ease;
+  }
+  .cg-card:hover .cg-play {
+    transform: scale(1.08);
+  }
+  </style>
+
+    <!-- Banner / Video Section -->
+<div class="relative w-full">
+    {% if user_paid %}
+    {% if movie.video_file or movie.cloudinary_video_url %}
+    <div class="relative pt-[56.25%] md:h-[600px] md:pt-0">
+        <div id="banner-video-container" class="absolute inset-0">
+            <video id="videoPlayer" class="w-full h-full object-cover" preload="metadata" controls autoplay>
+                {% if movie.video_file %}
+                <source src="{% url 'stream_video' movie.video_file.name %}" type="video/mp4">
+                {% elif movie.cloudinary_video_url %}
+                <source src="{{ movie.cloudinary_video_url }}" type="video/mp4">
+                {% endif %}
+            </video>
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div id="banner-poster" class="relative pt-[56.25%] md:h-[600px] md:pt-0">
+        <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#1E1E1E] via-transparent to-transparent"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+            <a href="{% url 'payment_after_movie' movie.id %}" class="bg-[#B11226] hover:bg-red-700 px-8 py-3 rounded-lg font-semibold shadow-lg text-white transition">
+                Pay NRS 100 to Watch
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+    <!-- Movie Info Section -->
+    <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-10">
+
+        <!-- Poster -->
+        <div class="w-full md:w-[20%] flex-shrink-0">
+            <img src="{{ movie.poster.url }}" alt="{{ movie.title }}"
+                 class="rounded-lg shadow-2xl border border-gray-700 hover:scale-105 transform transition">
+        </div>
+
+        <!-- Details -->
+        <div class="flex-1">
+            <h1 class="text-4xl font-extrabold mb-4">{{ movie.title }}</h1>
+            <p class="text-gray-300 mb-6 leading-relaxed">{{ movie.description }}</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 text-sm text-gray-400">
+                <p><span class="font-semibold text-white">Genre:</span> {{ movie.genre }}</p>
+                <p><span class="font-semibold text-white">Duration:</span> {{ movie.duration }}</p>
+                <p><span class="font-semibold text-white">Release:</span> {{ movie.release_date }}</p>
+                <p><span class="font-semibold text-white">Country:</span> {{ movie.country }}</p>
+                <p><span class="font-semibold text-white">Cast:</span> {{ movie.cast }}</p>
+                <p><span class="font-semibold text-white">Production:</span> {{ movie.production }}</p>
+            </div>
+
+            <!-- Watchlist Button -->
+           <div class="mt-6 flex flex-wrap gap-4">
+    {% if user.is_authenticated %}
+        {% if is_favourite %}
+            <a href="{% url 'toggle_favourite' movie.id %}"
+               class="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg font-semibold shadow-md transition">
+                – Remove from Watchlist
+            </a>
+        {% else %}
+            <a href="{% url 'toggle_favourite' movie.id %}"
+               class="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg font-semibold shadow-md transition">
+                + Add to Watchlist
+            </a>
+        {% endif %}
+    {% else %}
+        <a href="{% url 'login' %}?next={% url 'movie_detail' movie.id %}"
+           class="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg font-semibold shadow-md transition">
+            + Add to Watchlist
+        </a>
+    {% endif %}
+</div>
+        </div>
+    </div>
+
+    <!-- Suggested Movies -->
+    <!-- Suggested Movies Section (Original Size) -->
+   <div class="max-w-7xl mx-auto px-6 py-12">
+  <h2 class="text-2xl font-bold mb-6 border-b border-gray-700 pb-2">You May Also Like</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+    {% for sm in suggested_movies %}
+    <a href="{% url 'movie_detail' sm.id %}" class="group block">
+      <div class="cg-card shadow-lg border border-gray-800" style="aspect-ratio: 2/3;">
+        <img src="{{ sm.poster.url }}" alt="{{ sm.title }}">
+        <div class="cg-overlay">
+          <div class="cg-play">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white ml-1" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 2v20l18-10L4 2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <p class="mt-2 text-center text-gray-300 group-hover:text-white transition font-medium">
+        {{ sm.title }}
+      </p>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+</div>
+
+{% if user.is_authenticated and user_paid %}
+<script>
+const player = document.getElementById("videoPlayer");
+const movieId = "{{ movie.id }}";
+const csrftoken = "{{ csrf_token }}";
+const lastPosition = parseInt("{{ last_position|default:'0' }}", 10);
+let saveTimer = null;
+
+// Resume playback safely
+player.addEventListener("loadedmetadata", () => {
+    if (lastPosition > 0 && lastPosition < player.duration) {
+        setTimeout(() => {
+            player.currentTime = lastPosition;
+            console.log("Resuming video at", lastPosition, "seconds");
+        }, 200); // slight delay to ensure proper seeking
+    }
+
+    // Save progress every 5 seconds
+    saveTimer = setInterval(() => saveProgress(false), 5000);
+});
+
+// Save progress function
+function saveProgress(ended=false) {
+    fetch(`/api/progress/${movieId}/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken
+        },
+        body: JSON.stringify({
+            last_position: Math.floor(player.currentTime),
+            duration: Math.floor(player.duration),
+            ended: ended
+        })
+    })
+    .then(res => res.json())
+    .then(data => console.log("Progress saved:", data.progress))
+    .catch(err => console.error(err));
+}
+
+// Save at video end
+player.addEventListener("ended", () => {
+    saveProgress(true);
+    clearInterval(saveTimer);
+});
+</script>
+{% endif %}
+    <footer class="bg-[#2b2b2b] text-[#F6F1EB]">
+        <div class="container mx-auto px-6 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <img src="{% static 'icons/cinema.png' %}" alt="CinemaGhar Logo" class="h-10 w-auto">
+                        <h5 class="text-2xl font-bold text-[#D4A017]">CinemaGhar</h5>
+                    </div>
+                    <p class="text-sm text-gray-300">
+                        Nepal's first OTT platform bringing you the best of Newari cinema.
+                    </p>
+                    <div class="flex space-x-4 mt-2">
+                        <a href="#" class="transition-transform hover:scale-110">
+                            <img src="{% static 'icons/tiktok.svg' %}" alt="TikTok" class="w-6 h-6">
+                        </a>
+                        <a href="#" class="transition-transform hover:scale-110">
+                            <img src="{% static 'icons/instagram.svg' %}" alt="Instagram" class="w-6 h-6">
+                        </a>
+                        <a href="#" class="transition-transform hover:scale-110">
+                            <img src="{% static 'icons/facebook.svg' %}" alt="Facebook" class="w-6 h-6">
+                        </a>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <h5 class="text-xl font-semibold text-[#D4A017]">Navigation</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-[#D4A017] transition-colors">Home</a></li>
+                        <li><a href="#" class="hover:text-[#D4A017] transition-colors">Movies</a></li>
+                        <li><a href="#" class="hover:text-[#D4A017] transition-colors">My List</a></li>
+                        <li><a href="#" class="hover:text-[#D4A017] transition-colors">Series</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-4">
+                    <h5 class="text-xl font-semibold text-[#D4A017]">Support</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-[#D4A017] transition-colors">FAQ</a></li>
+                        <li><a href="#" class="hover:text-[#D4A017] transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-[#D4A017] transition-colors">Return & Refund Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-600 mt-8 pt-4 text-center text-xs text-gray-400">
+                © 2025 CinemaGhar. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+<script>
+document.getElementById('play-button').addEventListener('click', function () {
+    const poster = document.getElementById('banner-poster');
+    const videoContainer = document.getElementById('banner-video-container');
+
+    poster.style.display = 'none';
+    videoContainer.classList.remove('hidden');
+    document.getElementById('banner-video').play();
+    this.style.display = 'none';
+});
+</script>
+<script>
+document.getElementById('play-button').addEventListener('click', function () {
+    const poster = document.getElementById('banner-poster');
+    const videoContainer = document.getElementById('banner-video-container');
+
+    poster.style.display = 'none';
+    videoContainer.classList.remove('hidden');
+    document.getElementById('banner-video').play();
+    this.style.display = 'none';
+});
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% if results %}
+  <ul class="divide-y divide-gray-700 max-h-80 overflow-y-auto rounded-lg shadow-lg bg-[#1A1A1A]">
+    {% for movie in results %}
+      <li class="p-2 hover:bg-gray-600 transition" data-aos="fade-down">
+        <a href="{% url 'movie_detail' movie.id %}" class="flex items-center space-x-2">
+          <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="w-10 h-12 object-cover rounded" />
+          <span class="text-white">{{ movie.title }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="p-2 text-gray-400" data-aos="fade-down">No results found.</p>
+{% endif %}

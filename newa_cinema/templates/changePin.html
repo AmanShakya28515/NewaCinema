@@ -1,0 +1,63 @@
+{% extends 'BaseSecond.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<body class="bg-[#0D1117] text-white font-[Segoe_UI] min-h-screen overflow-x-hidden">
+
+  <!-- Back Button -->
+  <div class="mt-4 ml-4">
+    <a href="{% url 'update_profile' %}" 
+       class="inline-flex items-center bg-[#B11226] hover:bg-[#6A1B1A] text-white px-4 py-2 rounded-md shadow transition duration-300">
+      ← Back
+    </a>
+  </div>
+  <!-- Container -->
+  <div class="max-w-3xl mx-auto mt-10 px-4">
+    <!-- Section Card -->
+    <div class="bg-[#1E1E1E] rounded-2xl shadow-lg border border-gray-700">
+      <!-- Header -->
+      <div class="border-b border-gray-700 px-6 py-4">
+        <h2 class="text-xl font-semibold">Change OTP</h2>
+        <p class="text-gray-400 text-sm">Update your one-time password for secure access</p>
+      </div>
+      <!-- Content -->
+      <div class="p-6 space-y-6">
+        <!-- Current OTP -->
+        <div>
+          <label class="block mb-2 text-sm font-medium">Current OTP</label>
+          <input 
+            type="text" 
+            value="{{ request.user.otp|default:'Not Set' }}" 
+            readonly
+            class="w-full rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2 cursor-not-allowed"
+          />
+        </div>
+        <!-- Form -->
+        <form method="POST" novalidate class="space-y-6">
+          {% csrf_token %}
+          <div>
+            <label for="{{ form.otp.id_for_label }}" class="block mb-2 text-sm font-medium">New OTP</label>
+            {{ form.otp|add_class:"w-full rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B11226]" }}
+            {% if form.otp.errors %}
+              <p class="text-red-500 text-sm mt-1 whitespace-pre-line">
+                {{ form.otp.errors.as_text|linebreaksbr }}
+              </p>
+            {% endif %}
+          </div>
+          <!-- Buttons -->
+          <div class="flex items-center justify-between">
+            <a href="{% url 'dashboard' %}" 
+               class="text-gray-400 hover:text-white transition">
+              Cancel
+            </a>
+            <button type="submit"
+              class="bg-[#B11226] hover:bg-[#6A1B1A] text-white font-semibold px-6 py-2 rounded-lg shadow-md transition duration-300">
+              Update OTP
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+{% endblock %}

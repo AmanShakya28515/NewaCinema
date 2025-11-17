@@ -1,0 +1,39 @@
+name: CI/CD Pipeline - Deploy to AWS Lightsail
+
+on:
+  push:
+    branches:
+      - main   # Triggers the workflow when you push to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/lightsail_key.pem
+          chmod 600 ~/.ssh/lightsail_key.pem
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to AWS Lightsail
+        run: |
+          ssh -i ~/.ssh/lightsail_key.pem ${{ secrets.USERNAME }}@${{ secrets.HOST }} bash << 'EOF'
+          cd /home/ubuntu/NewaCinema
+          git fetch origin main
+          git reset --hard origin/main
+          # Activate virtual environment
+          source venv/bin/activate
+          # Django commands
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+          # Restart services
+          sudo systemctl restart gunicorn
+          sudo systemctl restart nginx
+          EOF
+
+

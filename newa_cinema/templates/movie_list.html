@@ -1,0 +1,76 @@
+{% load static %}
+{% for movie in movies %}
+<div class="movie-card">
+    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+    <h3>{{ movie.title }}</h3>
+    <p>{{ movie.genre }}</p>
+    <p>{{ movie.description|truncatewords:20 }}</p>
+
+    {% if user.is_authenticated %}
+        {% if movie.id in user_fav_ids %}
+            <a href="{% url 'toggle_favourite' movie.id %}">Remove</a>
+        {% else %}
+            <a href="{% url 'toggle_favourite' movie.id %}">Add</a>
+        {% endif %}
+    {% else %}
+        <a href="{% url 'login' %}">Login to add to favourites</a>
+    {% endif %}
+</div>
+{% endfor %}
+<footer class="bg-[#2b2b2b] text-[#F6F1EB]">
+  <div class="container mx-auto px-6 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+
+      <!-- Brand Section -->
+      <div class="space-y-4">
+        <div class="flex items-center space-x-3">
+          <img src="{% static 'icons/cinema.png' %}" alt="CinemaGhar Logo" class="h-10 w-auto">
+          <h5 class="text-2xl font-bold text-[#D4A017]">CinemaGhar</h5>
+        </div>
+        <p class="text-sm text-gray-300">
+          Nepal's first OTT platform bringing you the best of Newari cinema.
+        </p>
+        <div class="flex space-x-4 mt-2">
+          <!-- Social Media Icons Only, Bigger -->
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/tiktok.svg' %}" alt="TikTok" class="w-6 h-6">
+          </a>
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/instagram.svg' %}" alt="Instagram" class="w-6 h-6">
+          </a>
+          <a href="#" class="transition-transform hover:scale-110">
+            <img src="{% static 'icons/facebook.svg' %}" alt="Facebook" class="w-6 h-6">
+          </a>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="space-y-4">
+        <h5 class="text-xl font-semibold text-[#D4A017]">Navigation</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Home</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Movies</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">My List</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Series</a></li>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div class="space-y-4">
+        <h5 class="text-xl font-semibold text-[#D4A017]">Support</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">FAQ</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Contact Us</a></li>
+          <li><a href="#" class="hover:text-[#D4A017] transition-colors">Return & Refund Policy</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="border-t border-gray-600 mt-8 pt-4 text-center text-xs text-gray-400">
+      © 2025 CinemaGhar. All rights reserved.
+    </div>
+  </div>
+</footer>
+
