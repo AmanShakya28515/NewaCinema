@@ -95,9 +95,9 @@ WSGI_APPLICATION = 'NewaCinema.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'newa_cinema',         
-        'USER': 'cinema_user',                 
-        'PASSWORD': 'StrongPassword123!',                 
+        'NAME': 'newacinema',         
+        'USER': 'newauser',                 
+        'PASSWORD': 'NewaJheepe8765@',                 
         'HOST': '127.0.0.1',             
         'PORT': '3306',
     }
